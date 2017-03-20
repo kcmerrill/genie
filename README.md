@@ -4,7 +4,9 @@
 
 ![genie](https://raw.githubusercontent.com/kcmerrill/genie/master/assets/genie.jpg "genie")
 
-Lambda knockoff. A [crush](http://github.com/kcmerrill/crush) companion.
+Lambda knockoff so to speak. By registering lambda's to public github files, can execute files and tasks concurrently if need be. 
+
+A [crush](http://github.com/kcmerrill/crush) companion. By adding web based workers(aka curlers) can easily create queue and workers with minimal effort.
 
 ## Binaries || Installation
 
