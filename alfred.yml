@@ -1,0 +1,8 @@
+tdd:
+  watch: "*.?go"
+  tasks: test
+
+test:
+  summary: Test ...
+  command: |
+    go test .
