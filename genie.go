@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	port := flag.String("port", "8080", "Default port to serve from")
-	dir := flag.String("dir", ".", "Directory to serve code from")
+	port := flag.String("port", "80", "Default port to serve from")
+	dir := flag.String("dir", "lambdas", "Directory to serve lambdas from")
 	flag.Parse()
 
-	g := genie.New(*dir, *port)
-	g.Serve()
+	// start genie web server
+	genie.New(*dir, *port).Serve()
 }
