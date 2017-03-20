@@ -16,11 +16,9 @@ via go:
 
 ## Usage
 
-When starting `genie` there are a few options you can use. `dir` will determine where to save your lambdas. `port` will determine which port to run on.
+Lambdas can only(right now) be fetched from public github repos. Feel free to use the lambdas stored in this public repository as examples. For these demos, we'll assume `genie` is running at `http://localhost/`.
 
-Lambdas can only(right now) be fetched from public github repos. Feel free to use the lambdas stored in this public repository as examples. For these demos, we'll assume `genie` is running at `http://localhost/`. 
-
-To register a new github public lambda named `my.new.python`:
+To register a new github public lambda named `my.new.python.lambda`:
 
 ```bash
 curl -X GET http://localhost/my.new.python.lambda/github.com/kcmerrill/genie/lambdas/echo.py
@@ -37,3 +35,10 @@ To execute the lambda `my.new.python.lambda` with cli arguments
 ```bash
  curl -X GET http://localhost/my.new.python.lambda/cliarg1/cliarg2/etc/etc/etc
 ```
+
+## Options
+
+When starting `genie` there are a few options you can use.
+
+* `dir` will determine where to save your lambdas.
+* `port` will determine which port to run on.
