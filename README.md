@@ -38,6 +38,12 @@ To execute the lambda `my.new.python.lambda` with cli arguments
  curl -X GET http://localhost/my.new.python.lambda/cliarg1/cliarg2/etc/etc/etc
 ```
 
+To execute the lambda `my.new.python.lambda` with stdin
+
+```bash
+curl -X POST -d "This goes straight to stdin\!" http://localhost:8080/my.new.python.lambda/arg1/arg2
+```
+
 ## Options
 
 When starting `genie` there are a few options you can use.
