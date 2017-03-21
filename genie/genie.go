@@ -46,6 +46,7 @@ type Genie struct {
 func (g *Genie) Serve() {
 	r := mux.NewRouter()
 	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.GitHubWebHandler)
+	r.HandleFunc(`/{name}/register/{command}`, g.LambdaCreatorWebHandler)
 	r.HandleFunc(`/{name}/{args:[a-zA-Z0-9=\-\/\.]+}`, g.LambdaWebHandler)
 	r.HandleFunc(`/{name}`, g.LambdaWebHandler)
 	srv := &http.Server{
@@ -134,4 +135,28 @@ func (g *Genie) LambdaWebHandler(resp http.ResponseWriter, req *http.Request) {
 		}
 		fmt.Fprint(resp, string(output))
 	}
+}
+
+// LambdaCreatorWebHandler will execute a given lambda
+func (g *Genie) LambdaCreatorWebHandler(resp http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	code, codeErr := ioutil.ReadAll(req.Body)
+	if codeErr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Cannot read request body","lambda":"%s"}"`, vars["name"]))
+		return
+	}
+	nl, lErr := NewLambda(g.Dir, vars["name"], vars["command"], []byte(string(code)))
+	if lErr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to create lambda file","lambda":"%s"}"`, vars["name"]))
+		return
+	}
+
+	// good to go
+	g.AddLambda(nl)
+
+	// print success message
+	resp.WriteHeader(http.StatusOK)
+	fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s"}"`, vars["name"]))
 }

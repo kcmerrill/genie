@@ -44,6 +44,14 @@ To execute the lambda `my.new.python.lambda` with stdin
 curl -X POST -d "This goes straight to stdin\!" http://localhost:8080/my.new.python.lambda/arg1/arg2
 ```
 
+To create a lambda via http body
+
+```bash
+curl -X POST -d "print 'My new lambda'" http://localhost:8080/mynewlambda/register/python
+```
+
+Where `mynewlambda` is the lambda name, `python` is the command to execute it.
+
 ## Options
 
 When starting `genie` there are a few options you can use.
