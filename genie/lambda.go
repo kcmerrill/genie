@@ -2,6 +2,7 @@ package genie
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"os/exec"
 	"strings"
@@ -42,13 +43,17 @@ func (l *Lambda) Write() error {
 }
 
 // Execute will execute the lambda and return it's output and errors(if applicable)
-func (l *Lambda) Execute(args string) ([]byte, error) {
+func (l *Lambda) Execute(stdin io.Reader, args string) ([]byte, error) {
 	cmd := exec.Command("bash", "-c", l.Command+" "+l.Dir+"/"+l.Name+" "+strings.Replace(args, "/", " ", -1))
+	// pass through some stdin goodness
+	cmd.Stdin = stdin
+
+	// for those who are about to rock, I salute you.
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err == nil {
-		log.WithFields(log.Fields{"name": l.Name, "command": l.Command}).Info("Lambda Ran(succesful)")
+		log.WithFields(log.Fields{"name": l.Name, "command": l.Command}).Info("Lambda Execution")
 		return stdoutStderr, nil
 	}
-	log.WithFields(log.Fields{"name": l.Name, "command": l.Command}).Error("Lambda Ran(failed)")
+	log.WithFields(log.Fields{"name": l.Name, "command": l.Command}).Error("Lambda Execution")
 	return stdoutStderr, errors.New("Error runing command")
 }

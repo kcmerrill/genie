@@ -23,15 +23,23 @@ func New(dir, port string) *Genie {
 		Lock: &sync.Mutex{},
 	}
 	g.Lambdas = make(map[string]*Lambda)
+	g.Whitelist = make(map[string]bool)
+
+	g.Whitelist["whoami"] = true
+	g.Whitelist["top"] = true
+	g.Whitelist["htop"] = true
+	g.Whitelist["df"] = true
+
 	return g
 }
 
 // Genie will store our instance information
 type Genie struct {
-	Dir     string
-	Port    string
-	Lock    *sync.Mutex
-	Lambdas map[string]*Lambda
+	Dir       string
+	Port      string
+	Lock      *sync.Mutex
+	Lambdas   map[string]*Lambda
+	Whitelist map[string]bool
 }
 
 // Serve will start the web server
@@ -117,7 +125,8 @@ func (g *Genie) LambdaWebHandler(resp http.ResponseWriter, req *http.Request) {
 		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Lambda does not exist","lambda":"%s"}"`, vars["name"]))
 	} else {
 		g.Lock.Unlock()
-		output, cmdErr := l.Execute(vars["args"])
+		defer req.Body.Close()
+		output, cmdErr := l.Execute(req.Body, vars["args"])
 		if cmdErr == nil {
 			resp.WriteHeader(http.StatusOK)
 		} else {
