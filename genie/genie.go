@@ -16,40 +16,36 @@ import (
 )
 
 // New create an instance of Genie
-func New(dir, port string) *Genie {
+func New(dir, port, token string) *Genie {
 	g := &Genie{
-		Dir:  strings.TrimRight(dir, "/"),
-		Port: port,
-		Lock: &sync.Mutex{},
+		Dir:   strings.TrimRight(dir, "/"),
+		Port:  port,
+		Lock:  &sync.Mutex{},
+		Token: token,
 	}
+
 	g.Lambdas = make(map[string]*Lambda)
-	g.Whitelist = make(map[string]bool)
-
-	g.Whitelist["whoami"] = true
-	g.Whitelist["top"] = true
-	g.Whitelist["htop"] = true
-	g.Whitelist["df"] = true
-
 	return g
 }
 
 // Genie will store our instance information
 type Genie struct {
-	Dir       string
-	Port      string
-	Lock      *sync.Mutex
-	Lambdas   map[string]*Lambda
-	Whitelist map[string]bool
+	Dir     string
+	Port    string
+	Lock    *sync.Mutex
+	Lambdas map[string]*Lambda
+	Token   string
 }
 
 // Serve will start the web server
 func (g *Genie) Serve() {
 	r := mux.NewRouter()
-	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.GitHubWebHandler)
-	r.HandleFunc(`/{name}/code/{command}`, g.LambdaCreatorWebHandler)
-	r.HandleFunc(`/{name}/custom`, g.CustomLambdaCreatorWebHandler)
-	r.HandleFunc(`/{name}/{args:[a-zA-Z0-9=\-\/\.]+}`, g.LambdaWebHandler)
-	r.HandleFunc(`/{name}`, g.LambdaWebHandler)
+	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.requireAuth(g.GitHubWebHandler))
+	r.HandleFunc(`/{name}/code/{command}`, g.requireAuth(g.LambdaCreatorWebHandler))
+	r.HandleFunc(`/{name}/custom`, g.requireAuth(g.CustomLambdaCreatorWebHandler))
+	r.HandleFunc(`/{name}/{args:[a-zA-Z0-9=\-\/\.]+}`, g.requireAuth(g.LambdaWebHandler))
+	r.HandleFunc(`/{name}`, g.requireAuth(g.LambdaWebHandler))
+
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":" + g.Port,
@@ -187,4 +183,15 @@ func (g *Genie) CustomLambdaCreatorWebHandler(resp http.ResponseWriter, req *htt
 	// print success message
 	resp.WriteHeader(http.StatusOK)
 	fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s", "command":"%s"}"`, vars["name"], cmd))
+}
+
+func (g *Genie) requireAuth(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, _, _ := r.BasicAuth()
+		if g.Token != "" && g.Token != token {
+			http.Error(w, `{"error": "unauthorized"}`, http.StatusUnauthorized)
+			return
+		}
+		fn(w, r)
+	}
 }
