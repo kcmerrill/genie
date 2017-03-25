@@ -16,5 +16,10 @@ via go:
 
 `$ go get -u github.com/kcmerrill/genie`
 
-## Usage
+## Demo 
 
+[![asciicast](https://asciinema.org/a/108888.png)](https://asciinema.org/a/108888)
+
+## RTFM
+
+(Don't forget to RTFM)[TFM.md]
