@@ -22,4 +22,4 @@ via go:
 
 ## RTFM
 
-(Don't forget to RTFM)[TFM.md]
+[TFM.md](Don't forget to RTFM)
