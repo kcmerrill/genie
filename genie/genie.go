@@ -46,14 +46,15 @@ type Genie struct {
 func (g *Genie) Serve() {
 	r := mux.NewRouter()
 	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.GitHubWebHandler)
-	r.HandleFunc(`/{name}/register/{command}`, g.LambdaCreatorWebHandler)
+	r.HandleFunc(`/{name}/code/{command}`, g.LambdaCreatorWebHandler)
+	r.HandleFunc(`/{name}/custom`, g.CustomLambdaCreatorWebHandler)
 	r.HandleFunc(`/{name}/{args:[a-zA-Z0-9=\-\/\.]+}`, g.LambdaWebHandler)
 	r.HandleFunc(`/{name}`, g.LambdaWebHandler)
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":" + g.Port,
-		WriteTimeout: 3 * time.Second,
-		ReadTimeout:  3 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  30 * time.Second,
 	}
 	log.WithFields(log.Fields{
 		"port":    g.Port,
@@ -69,7 +70,7 @@ func (g *Genie) AddLambda(l *Lambda) {
 	log.WithFields(log.Fields{"name": l.Name, "type": l.Command}).Info("Created lambda")
 }
 
-// GenerateCommand will try to generate a command given a file extension
+// GenerateCommand will try to guess a command given a file extension
 func (g *Genie) GenerateCommand(file string) string {
 	ext := filepath.Ext(file)
 	switch ext {
@@ -159,4 +160,31 @@ func (g *Genie) LambdaCreatorWebHandler(resp http.ResponseWriter, req *http.Requ
 	// print success message
 	resp.WriteHeader(http.StatusOK)
 	fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s"}"`, vars["name"]))
+}
+
+// CustomLambdaCreatorWebHandler will execute a given lambda
+func (g *Genie) CustomLambdaCreatorWebHandler(resp http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	cmd, cmdErr := ioutil.ReadAll(req.Body)
+	if cmdErr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Cannot read request body","lambda":"%s"}"`, vars["name"]))
+		return
+	}
+	nl, lErr := NewLambda(g.Dir, vars["name"], string(cmd), []byte(""))
+	// it's custom
+	nl.Custom = true
+
+	if lErr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to create custom lambda","command":"%s"}"`, cmd))
+		return
+	}
+
+	// good to go
+	g.AddLambda(nl)
+
+	// print success message
+	resp.WriteHeader(http.StatusOK)
+	fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s", "command":"%s"}"`, vars["name"], cmd))
 }
