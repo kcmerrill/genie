@@ -79,7 +79,7 @@ func (g *Genie) GenerateCommand(file string) string {
 	case ".sh":
 		return "sh"
 	default:
-		return "./"
+		return ""
 	}
 }
 

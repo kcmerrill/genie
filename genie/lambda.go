@@ -37,10 +37,6 @@ type Lambda struct {
 
 // Write takes the code and writes it to the directory + name
 func (l *Lambda) Write() error {
-	// custom? No need to write it
-	if l.Custom {
-		return nil
-	}
 	if err := ioutil.WriteFile(l.Dir+"/"+l.Name, l.Code, 0755); err == nil {
 		return nil
 	}

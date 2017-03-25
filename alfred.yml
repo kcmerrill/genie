@@ -1,8 +1,8 @@
 tdd:
-  watch: "*.?go"
+  watch: ".*?go$"
   tasks: test
 
 test:
   summary: Test ...
   command: |
-    go test .
+    go test genie/*
