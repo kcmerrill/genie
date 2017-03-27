@@ -40,7 +40,7 @@ type Genie struct {
 // Serve will start the web server
 func (g *Genie) Serve() {
 	r := mux.NewRouter()
-	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.requireAuth(g.GitHubWebHandler))
+	r.HandleFunc(`/{name}/github.com/{user}/{project}/{file:[a-zA-Z0-9=\-\/\.]+}`, g.requireAuth(g.GitHubLambdaWebHandler))
 	r.HandleFunc(`/{name}/code/{command}`, g.requireAuth(g.LambdaCreatorWebHandler))
 	r.HandleFunc(`/{name}/custom`, g.requireAuth(g.CustomLambdaCreatorWebHandler))
 	r.HandleFunc(`/{name}/{args:[a-zA-Z0-9=\-\/\.]+}`, g.requireAuth(g.LambdaWebHandler))
@@ -103,8 +103,8 @@ func (g *Genie) GithubLambda(name, user, project, file string) error {
 	return fmt.Errorf(`{"error": "Unable to reach github url","url":"%s"}"`, url)
 }
 
-// GitHubWebHandler takes in our github requests
-func (g *Genie) GitHubWebHandler(resp http.ResponseWriter, req *http.Request) {
+// GitHubLambdaWebHandler takes in our github requests
+func (g *Genie) GitHubLambdaWebHandler(resp http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	err := g.GithubLambda(vars["name"], vars["user"], vars["project"], vars["file"])
 	if err == nil {

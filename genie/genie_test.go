@@ -1,6 +1,9 @@
 package genie
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestNew(t *testing.T) {
 	g := New("dir", "port", "token")
@@ -62,5 +65,27 @@ func TestGenerateCommand(t *testing.T) {
 	// test default
 	if g.GenerateCommand("file.doesnotexist") != "" {
 		t.Fatal("Unknown filetypes should return an empty string")
+	}
+}
+
+func TestGitHubLambda(t *testing.T) {
+	g := New("/tmp", "port", "token")
+	g.GithubLambda("github", "kcmerrill", "genie", "lambdas/echo.py")
+
+	if g.Lambdas["github"].Dir != "/tmp" {
+		t.Fatal("Github lambda directory is incorrect")
+	}
+
+	if g.Lambdas["github"].Command != "python" {
+		t.Fatal("Github lambda command should be python")
+	}
+
+	if g.Lambdas["github"].Name != "github" {
+		t.Fatal("Github lambda name should be github")
+	}
+
+	// silly hack, but a test is a test
+	if !strings.HasPrefix(string(g.Lambdas["github"].Code), "import sys") {
+		t.Fatal("Github lambda code should start with 'import sys'")
 	}
 }
