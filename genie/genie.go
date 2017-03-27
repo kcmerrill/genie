@@ -83,31 +83,36 @@ func (g *Genie) GenerateCommand(file string) string {
 	}
 }
 
-// GitHubWebHandler takes in our github requests
-func (g *Genie) GitHubWebHandler(resp http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/master/%s", vars["user"], vars["project"], vars["file"])
+// GithubLambda will retrieve a lambda from github
+func (g *Genie) GithubLambda(name, user, project, file string) error {
+	url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/master/%s", user, project, file)
 	response, getErr := http.Get(url)
 	defer response.Body.Close()
 	if getErr == nil {
 		body, bodyErr := ioutil.ReadAll(response.Body)
 		if bodyErr == nil && response.StatusCode == 200 {
-			nl, lErr := NewLambda(g.Dir, vars["name"], g.GenerateCommand(vars["file"]), body)
+			nl, lErr := NewLambda(g.Dir, name, g.GenerateCommand(file), body)
 			if lErr == nil {
 				g.AddLambda(nl)
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s"}"`, vars["name"]))
-			} else {
-				resp.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprint(resp, fmt.Sprintf(`{"error": "%s"}"`, string(lErr.Error())))
+				return nil
 			}
-		} else {
-			resp.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to read the contents of the file","url":"%s"}"`, url))
+			return fmt.Errorf(`{"error": "%s"}"`, string(lErr.Error()))
 		}
+		return fmt.Errorf(`{"error": "Unable to read the contents of the file","url":"%s"}"`, url)
+	}
+	return fmt.Errorf(`{"error": "Unable to reach github url","url":"%s"}"`, url)
+}
+
+// GitHubWebHandler takes in our github requests
+func (g *Genie) GitHubWebHandler(resp http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	err := g.GithubLambda(vars["name"], vars["user"], vars["project"], vars["file"])
+	if err == nil {
+		resp.WriteHeader(http.StatusOK)
+		fmt.Fprint(resp, fmt.Sprintf(`{"success": "Created lambda","name":"%s"}"`, vars["name"]))
 	} else {
-		resp.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to reach github url","url":"%s"}"`, url))
+		resp.WriteHeader(http.StatusExpectationFailed)
+		fmt.Fprint(resp, err.Error())
 	}
 }
 
