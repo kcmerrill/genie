@@ -3,4 +3,4 @@ language: go
 go:
     - 1.6.2
 
-script: go test genie/*
+script: go test genie/...
