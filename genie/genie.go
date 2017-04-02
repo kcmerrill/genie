@@ -9,8 +9,6 @@ import (
 
 	"strings"
 
-	"path/filepath"
-
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,7 +22,7 @@ func New(dir, port, token string) *Genie {
 		Token: token,
 	}
 
-	g.Lambdas = make(map[string]*Lambda)
+	g.Lambdas = make(map[string]Lambda)
 	return g
 }
 
@@ -33,7 +31,7 @@ type Genie struct {
 	Dir     string
 	Port    string
 	Lock    *sync.Mutex
-	Lambdas map[string]*Lambda
+	Lambdas map[string]Lambda
 	Token   string
 }
 
@@ -52,35 +50,17 @@ func (g *Genie) Serve() {
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
-	log.WithFields(log.Fields{
-		"port":    g.Port,
-		"timeout": 3}).Info("Starting Genie's Webserver ...")
+
+	log.WithFields(log.Fields{"port": g.Port}).Info("Starting Genie's Webserver ...")
 	log.Fatal(srv.ListenAndServe())
 }
 
 // AddLambda overwrites/creates a lambda at a given name
-func (g *Genie) AddLambda(l *Lambda) {
+func (g *Genie) AddLambda(l Lambda) {
 	g.Lock.Lock()
-	g.Lambdas[l.Name] = l
+	g.Lambdas[l.Name()] = l
 	defer g.Lock.Unlock()
-	log.WithFields(log.Fields{"name": l.Name, "type": l.Command}).Info("Created lambda")
-}
-
-// GenerateCommand will try to guess a command given a file extension
-func (g *Genie) GenerateCommand(file string) string {
-	ext := filepath.Ext(file)
-	switch ext {
-	case ".py":
-		return "python"
-	case ".rb":
-		return "ruby"
-	case ".php":
-		return "php"
-	case ".sh":
-		return "sh"
-	default:
-		return ""
-	}
+	log.WithFields(log.Fields{"name": l.Name()}).Info("Created lambda")
 }
 
 // GithubLambda will retrieve a lambda from github
@@ -91,7 +71,7 @@ func (g *Genie) GithubLambda(name, user, project, file string) error {
 	if getErr == nil {
 		body, bodyErr := ioutil.ReadAll(response.Body)
 		if bodyErr == nil && response.StatusCode == 200 {
-			nl, lErr := NewLambda(g.Dir, name, g.GenerateCommand(file), body)
+			nl, lErr := NewLocalLambda(name, g.Dir, file, body)
 			if lErr == nil {
 				g.AddLambda(nl)
 				return nil
@@ -148,7 +128,7 @@ func (g *Genie) LambdaCreatorWebHandler(resp http.ResponseWriter, req *http.Requ
 		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Cannot read request body","lambda":"%s"}"`, vars["name"]))
 		return
 	}
-	nl, lErr := NewLambda(g.Dir, vars["name"], vars["command"], []byte(string(code)))
+	nl, lErr := NewLocalLambda(vars["name"], g.Dir, vars["command"], []byte(string(code)))
 	if lErr != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to create lambda file","lambda":"%s"}"`, vars["name"]))
@@ -172,15 +152,8 @@ func (g *Genie) CustomLambdaCreatorWebHandler(resp http.ResponseWriter, req *htt
 		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Cannot read request body","lambda":"%s"}"`, vars["name"]))
 		return
 	}
-	nl, lErr := NewLambda(g.Dir, vars["name"], string(cmd), []byte(""))
-	// it's custom
-	nl.Custom = true
 
-	if lErr != nil {
-		resp.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(resp, fmt.Sprintf(`{"error": "Unable to create custom lambda","command":"%s"}"`, cmd))
-		return
-	}
+	nl := NewCustomLambda(vars["name"], string(cmd))
 
 	// good to go
 	g.AddLambda(nl)

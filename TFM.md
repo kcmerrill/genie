@@ -42,6 +42,25 @@ curl -X POST -d "print 'My new lambda'" http://localhost:8080/mynewlambda/regist
 
 Where `mynewlambda` is the lambda name, `python` is the command to execute it.
 
+## Custom code
+
+You can use genie with custom go code as well. This is useful if you want to create lambdas with go code directly, along with all the other functionality you can get with genie and other programming languages.
+
+Creating a new lambda is as simple as creating a new function with `func example(stdin io.Reader, args string) (string, error)`.
+	
+## Genie as a package
+
+There were a few use cases I created `genie` for, not just for lambdas via the web browser. To use `genie` as a package, and install your own lambdas take a peek at `main.go`. In doing so, here are a few ways to inject your lambdas. 
+
+```golang
+
+NewCustomLambda(name, command string)
+NewCodeLambda(name string, fn execute) // execute has the signature: func example(stdin io.Reader, args string) (string, error)
+NewLocalLambda(name, directory, command string, code []byte) // where directory is genie.Dir(it has to know where to look)
+
+```
+
+
 ## Options
 
 When starting `genie` there are a few options you can use.
