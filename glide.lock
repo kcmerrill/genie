@@ -1,8 +1,14 @@
 hash: fcac7ae3a505dd8ad3971682e871958f45afa9b17eed578bf96e15fa310b285c
-updated: 2017-03-19T20:24:33.396438444-06:00
+updated: 2017-04-01T21:01:31.166328152-06:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 392c28fe23e1c45ddba891b0320b3b5df220beea
+- name: github.com/sirupsen/logrus
+  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+- name: golang.org/x/sys
+  version: aaabbdc969c3935a2a7f61efac801e7163c73a2a
+  subpackages:
+  - unix
 testImports: []
