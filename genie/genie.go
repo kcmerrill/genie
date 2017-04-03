@@ -9,6 +9,8 @@ import (
 
 	"strings"
 
+	"io"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
@@ -172,4 +174,15 @@ func (g *Genie) requireAuth(fn http.HandlerFunc) http.HandlerFunc {
 		}
 		fn(w, r)
 	}
+}
+
+// Execute will take in a lambda name, stdin and args and try to execute. Returning an error if not found
+func (g *Genie) Execute(name string, stdin io.Reader, args string) (string, error) {
+	g.Lock.Lock()
+	l, exists := g.Lambdas[name]
+	g.Lock.Unlock()
+	if !exists {
+		return "", fmt.Errorf("Unable to find the lambda %s", name)
+	}
+	return l.Execute(stdin, args)
 }

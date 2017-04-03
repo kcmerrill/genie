@@ -46,7 +46,7 @@ func (l *CustomLambda) Execute(stdin io.Reader, args string) (string, error) {
 	if err == nil {
 		// noiiiice!
 		log.WithFields(log.Fields{"name": l.Name(), "command": l.command}).Info("Lambda Execution")
-		return string(stdoutStderr), nil
+		return strings.TrimSpace(string(stdoutStderr)), nil
 	}
 
 	// *sigh*

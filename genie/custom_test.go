@@ -2,14 +2,13 @@ package genie
 
 import (
 	"os"
-	"strings"
 	"testing"
 )
 
 func TestCustomLambdaOk(t *testing.T) {
 	nl := NewCustomLambda("name", "echo")
 	out, _ := nl.Execute(os.Stdin, "kcwazhere")
-	if strings.TrimSpace(out) != "kcwazhere" {
+	if out != "kcwazhere" {
 		t.Fatal("With a simple echo, was expecting kcwazhere to be displayed")
 	}
 }

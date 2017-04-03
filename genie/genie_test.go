@@ -1,6 +1,7 @@
 package genie
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -37,4 +38,19 @@ func TestGitHubLambda(t *testing.T) {
 	g := New("/tmp", "port", "token")
 	g.GithubLambda("github", "kcmerrill", "genie", "lambdas/echo.py")
 
+}
+
+func TestExecuteLambda(t *testing.T) {
+	g := New("/tmp", "port", "token")
+	l := NewCustomLambda("echo", "echo")
+	g.AddLambda(l)
+
+	out, err := g.Execute("echo", strings.NewReader(""), "kcwashere-indeed")
+	if out != "kcwashere-indeed" {
+		t.Fatalf("Expecting: 'kcwashere-indeed', Actual: '%s'", out)
+	}
+
+	if err != nil {
+		t.Fatalf("No errors on Execute()")
+	}
 }
