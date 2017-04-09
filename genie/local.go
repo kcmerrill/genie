@@ -66,5 +66,5 @@ func (l *LocalLambda) Execute(stdin io.Reader, args string) (string, error) {
 
 	// *sigh*
 	log.WithFields(log.Fields{"name": l.Name(), "command": l.command}).Error("Lambda Execution")
-	return string(stdoutStderr), errors.New("Error runing command")
+	return string(stdoutStderr), errors.New("Error running command")
 }
