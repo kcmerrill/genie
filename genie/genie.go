@@ -11,9 +11,16 @@ import (
 
 	"io"
 
+	"os"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
+
+// LogLevel sets the loglevel
+func LogLevel(level log.Level) {
+	log.SetLevel(level)
+}
 
 // New create an instance of Genie
 func New(dir, port, token string) *Genie {
@@ -23,6 +30,9 @@ func New(dir, port, token string) *Genie {
 		Lock:  &sync.Mutex{},
 		Token: token,
 	}
+
+	// attempt to make the directory
+	os.MkdirAll(dir, 0755)
 
 	g.Lambdas = make(map[string]Lambda)
 	return g
