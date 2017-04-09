@@ -26,6 +26,8 @@ func LogLevel(level string) {
 		log.SetLevel(log.InfoLevel)
 	case "low":
 		log.SetLevel(log.ErrorLevel)
+	default:
+		log.SetLevel(log.PanicLevel)
 	}
 }
 
