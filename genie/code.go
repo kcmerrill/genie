@@ -2,7 +2,7 @@ package genie
 
 import "io"
 
-type execute func(stdin io.Reader, args string) (string, error)
+type execute func(stdin io.Reader, args []string) (string, error)
 
 // NewCodeLambda will create a new code lambda
 func NewCodeLambda(name string, fn execute) *CodeLambda {
@@ -12,7 +12,7 @@ func NewCodeLambda(name string, fn execute) *CodeLambda {
 // CodeLambda will execute custom go code
 type CodeLambda struct {
 	name string
-	fn   func(stdin io.Reader, args string) (string, error)
+	fn   func(stdin io.Reader, args []string) (string, error)
 }
 
 // Name returns the lambdas name
@@ -21,6 +21,6 @@ func (l *CodeLambda) Name() string {
 }
 
 // Execute executes the function and returns the results
-func (l *CodeLambda) Execute(stdin io.Reader, args string) (string, error) {
+func (l *CodeLambda) Execute(stdin io.Reader, args []string) (string, error) {
 	return l.fn(stdin, args)
 }

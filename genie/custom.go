@@ -29,13 +29,13 @@ func (l *CustomLambda) Name() string {
 }
 
 // Execute executes the custom lambda command
-func (l *CustomLambda) Execute(stdin io.Reader, args string) (string, error) {
-	args = strings.Replace(strings.TrimSpace(args), "/", " ", -1)
-	if args != "" {
-		args = " " + args
+func (l *CustomLambda) Execute(stdin io.Reader, args []string) (string, error) {
+	argsStr := strings.TrimSpace(strings.Join(args, " "))
+	if argsStr != "" {
+		argsStr = " " + argsStr
 	}
 
-	cmd := exec.Command("bash", "-c", l.command+args)
+	cmd := exec.Command("bash", "-c", l.command+argsStr)
 
 	// pass through some stdin goodness
 	cmd.Stdin = stdin

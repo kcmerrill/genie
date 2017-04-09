@@ -45,7 +45,7 @@ func TestExecuteLambda(t *testing.T) {
 	l := NewCustomLambda("echo", "echo")
 	g.AddLambda(l)
 
-	out, err := g.Execute("echo", strings.NewReader(""), "kcwashere-indeed")
+	out, err := g.Execute("echo", strings.NewReader(""), []string{"kcwashere-indeed"})
 	if out != "kcwashere-indeed" {
 		t.Fatalf("Expecting: 'kcwashere-indeed', Actual: '%s'", out)
 	}

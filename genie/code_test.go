@@ -8,15 +8,15 @@ import (
 	"testing"
 )
 
-func example(stdin io.Reader, args string) (string, error) {
+func example(stdin io.Reader, args []string) (string, error) {
 	r, _ := ioutil.ReadAll(stdin)
-	return "custom:" + string(r) + args, nil
+	return "custom:" + string(r) + strings.Join(args, " "), nil
 }
 
 func TestCodeLambda(t *testing.T) {
 	l := NewCodeLambda("example", example)
 
-	out, _ := l.Execute(strings.NewReader("abcd"), "efghi")
+	out, _ := l.Execute(strings.NewReader("abcd"), []string{"efghi"})
 
 	if out != "custom:abcdefghi" {
 		log.Fatalf("Execute() on custom code should return stdin + args")

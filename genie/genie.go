@@ -132,7 +132,7 @@ func (g *Genie) LambdaWebHandler(resp http.ResponseWriter, req *http.Request) {
 	} else {
 		g.Lock.Unlock()
 		defer req.Body.Close()
-		output, cmdErr := l.Execute(req.Body, vars["args"])
+		output, cmdErr := l.Execute(req.Body, strings.Split(vars["args"], "/"))
 		if cmdErr == nil {
 			resp.WriteHeader(http.StatusOK)
 		} else {
@@ -198,7 +198,7 @@ func (g *Genie) requireAuth(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 // Execute will take in a lambda name, stdin and args and try to execute. Returning an error if not found
-func (g *Genie) Execute(name string, stdin io.Reader, args string) (string, error) {
+func (g *Genie) Execute(name string, stdin io.Reader, args []string) (string, error) {
 	g.Lock.Lock()
 	l, exists := g.Lambdas[name]
 	g.Lock.Unlock()
