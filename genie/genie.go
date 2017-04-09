@@ -18,8 +18,15 @@ import (
 )
 
 // LogLevel sets the loglevel
-func LogLevel(level log.Level) {
-	log.SetLevel(level)
+func LogLevel(level string) {
+	switch level {
+	case "high":
+		log.SetLevel(log.DebugLevel)
+	case "med":
+		log.SetLevel(log.InfoLevel)
+	case "low":
+		log.SetLevel(log.ErrorLevel)
+	}
 }
 
 // New create an instance of Genie
@@ -33,6 +40,8 @@ func New(dir, port, token string) *Genie {
 
 	// attempt to make the directory
 	os.MkdirAll(dir, 0755)
+
+	// set log level(by default) to Errors only
 
 	g.Lambdas = make(map[string]Lambda)
 	return g
