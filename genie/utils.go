@@ -16,6 +16,8 @@ func cmd(hint string) string {
 		return "php"
 	case ".sh":
 		return "sh"
+	case ".go":
+		return "go run"
 	default:
 		return hint
 	}
