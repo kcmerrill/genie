@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/kcmerrill/genie/genie"
+	"github.com/kcmerrill/genie/pkg/genie"
 )
 
 func main() {
